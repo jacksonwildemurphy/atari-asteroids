@@ -179,4 +179,5 @@ public class Screen extends JPanel
         checkForCollisions();
         repaint();
     }
+
 }

@@ -29,11 +29,11 @@ public class Controller implements CollisionListener, ActionListener,
     // The active bullets
     private LinkedList<Bullet> bullets;
 
-    // Count of how many bullets are on the screen
-    private int bulletCount; // TODO
-
     // When this timer goes off, it is time to refresh the animation
     private Timer refreshTimer;
+
+    // When this timer goes off, it is time to start a new level
+    private Timer nextLevelTimer;
 
     // When this timer goes off, it is time to accelerate the ship
     private Timer shipAccelTimer;
@@ -54,6 +54,15 @@ public class Controller implements CollisionListener, ActionListener,
     // Number of lives left
     private int lives;
 
+    // The user's score
+    private int score;
+
+    // The game level
+    private int level;
+
+    // The number of asteroids destroyed on a given level
+    private int asteroidsHit;
+
     // The Game and Screen objects being controlled
     private Game game;
     private Screen screen;
@@ -73,6 +82,9 @@ public class Controller implements CollisionListener, ActionListener,
         // Set up the refresh timer.
         refreshTimer = new Timer(FRAME_INTERVAL, this);
         transitionCount = 0;
+
+        // Set up the next-level timer
+        nextLevelTimer = new Timer(END_DELAY, this);
 
         // Set up the ship's acceleration timer
         shipAccelTimer = new Timer(SHIP_ACCEL_INTERVAL, this);
@@ -131,28 +143,28 @@ public class Controller implements CollisionListener, ActionListener,
     }
 
     /**
-     * Places four asteroids near the corners of the screen. Gives them random
-     * velocities and rotations.
+     * Places four large asteroids near the corners of the screen. Give them
+     * random directions and rotations, and a level-dependent speed.
      */
     private void placeAsteroids ()
     {
         Participant a = new Asteroid(0, 2, EDGE_OFFSET, EDGE_OFFSET);
-        a.setVelocity(3, random.nextDouble() * 2 * Math.PI);
+        a.setVelocity(level + 2, random.nextDouble() * 2 * Math.PI);
         a.setRotation(2 * Math.PI * random.nextDouble());
         screen.addParticipant(a);
 
         a = new Asteroid(1, 2, SIZE - EDGE_OFFSET, EDGE_OFFSET);
-        a.setVelocity(3, random.nextDouble() * 2 * Math.PI);
+        a.setVelocity(level + 2, random.nextDouble() * 2 * Math.PI);
         a.setRotation(2 * Math.PI * random.nextDouble());
         screen.addParticipant(a);
 
         a = new Asteroid(2, 2, EDGE_OFFSET, SIZE - EDGE_OFFSET);
-        a.setVelocity(3, random.nextDouble() * 2 * Math.PI);
+        a.setVelocity(level + 2, random.nextDouble() * 2 * Math.PI);
         a.setRotation(2 * Math.PI * random.nextDouble());
         screen.addParticipant(a);
 
         a = new Asteroid(3, 2, SIZE - EDGE_OFFSET, SIZE - EDGE_OFFSET);
-        a.setVelocity(3, random.nextDouble() * 2 * Math.PI);
+        a.setVelocity(level + 2, random.nextDouble() * 2 * Math.PI);
         a.setRotation(2 * Math.PI * random.nextDouble());
         screen.addParticipant(a);
     }
@@ -173,6 +185,44 @@ public class Controller implements CollisionListener, ActionListener,
 
         // Reset statistics
         lives = 3;
+        score = 0;
+        level = 1;
+        game.setLives("Lives: " + lives);
+        game.setScore("Score: " + score);
+        game.setLevel("Level: " + level);
+        asteroidsHit = 0;
+
+        // Start listening to events. In case we're already listening, take
+        // care to avoid listening twice.
+        screen.removeCollisionListener(this);
+        screen.removeKeyListener(this);
+        screen.addCollisionListener(this);
+        screen.addKeyListener(this);
+
+        // Give focus to the game screen
+        screen.requestFocusInWindow();
+    }
+
+    /**
+     * Starts a new level.
+     */
+    private void nextLevelScreen ()
+    {
+        asteroidsHit = 0;
+        ship = null;
+
+        // Clear the screen
+        screen.clear();
+
+        // Display the level number and make it disappear in one second
+        screen.setLegend("Level " + level);
+        new CountdownTimer(this, null, 1000);
+
+        // Place four asteroids
+        placeAsteroids();
+
+        // Place the ship
+        placeShip();
 
         // Start listening to events. In case we're already listening, take
         // care to avoid listening twice.
@@ -226,18 +276,19 @@ public class Controller implements CollisionListener, ActionListener,
     {
         if (p1 instanceof Asteroid && p2 instanceof Ship)
         {
-            asteroidCollision((Asteroid) p1);
             shipCollision((Ship) p2);
+            asteroidCollision((Asteroid) p1);
         }
         else if (p1 instanceof Ship && p2 instanceof Asteroid)
         {
-            asteroidCollision((Asteroid) p2);
             shipCollision((Ship) p1);
+            asteroidCollision((Asteroid) p2);
+
         }
         else if (p1 instanceof Asteroid && p2 instanceof Bullet)
         {
-            asteroidCollision((Asteroid) p1);
             bulletCollision((Bullet) p2);
+            asteroidCollision((Asteroid) p1);
         }
         else if (p1 instanceof Bullet && p2 instanceof Asteroid)
         {
@@ -259,8 +310,9 @@ public class Controller implements CollisionListener, ActionListener,
         screen.setLegend("Ouch!");
         new CountdownTimer(this, null, 1000);
 
-        // Decrement lives
+        // Decrement lives and update the lives label
         lives--;
+        game.setLives("Lives: " + lives);
 
         // Start the timer that will cause the next round to begin.
         new TransitionTimer(END_DELAY, transitionCount, this);
@@ -274,14 +326,44 @@ public class Controller implements CollisionListener, ActionListener,
         // The asteroid disappears
         screen.removeParticipant(a);
 
-        // Create two smaller asteroids. Put them at the same position
-        // as the one that was just destroyed, increase their speed, and give
-        // them a random direction.
+        // The asteroidsHit counter is incremented
+        asteroidsHit++;
+
+        // Points are added to the user's score
         int size = a.getSize();
-        size = size - 1;
+        switch (size)
+        {
+        case 0:
+            score += 100;
+            break;
+        case 1:
+            score += 50;
+            break;
+        case 2:
+            score += 20;
+            break;
+        }
+        // The score label is updated
+        game.setScore("Score: " + score);
+
+        // Move on to the next level if all 28 asteroids have been destroyed
+        if (asteroidsHit == 28)
+        {
+            level++;
+            game.setLevel("Level: " + level);
+
+            // Start the timer that will cause the next level to begin.
+            new TransitionTimer(END_DELAY, transitionCount, this);
+
+        }
+
+        // Two smaller asteroids are created if the destroyed asteroid wasn't
+        // the smallest. Put them at the same position as the one that was just
+        // destroyed, increase their speed, and give them a random direction.
+        size--;
         if (size >= 0)
         {
-            int speed = 5-size;
+            int speed = 4 - size + level;
             Asteroid a1 = new Asteroid(random.nextInt(4), size, a.getX(),
                     a.getY());
             Asteroid a2 = new Asteroid(random.nextInt(4), size, a.getX(),
@@ -294,7 +376,7 @@ public class Controller implements CollisionListener, ActionListener,
             screen.addParticipant(a2);
         }
     }
-    
+
     /**
      * A bullet has hit an asteroid.
      */
@@ -302,8 +384,7 @@ public class Controller implements CollisionListener, ActionListener,
     {
         screen.removeParticipant(b);
     }
-    
-    
+
     /**
      * This method will be invoked because of button presses and timer events.
      */
@@ -324,6 +405,14 @@ public class Controller implements CollisionListener, ActionListener,
 
             // Refresh screen
             screen.refresh();
+        }
+
+        // Time to go to the next level
+        // Note: Why doesn't Command().equals() work here?
+        else if (e.getActionCommand() == "level")
+        {
+            nextLevelTimer.stop();
+            nextLevelScreen();
         }
 
         // Time to accelerate the ship
@@ -348,7 +437,7 @@ public class Controller implements CollisionListener, ActionListener,
         }
 
         // Time to remove a bullet and delete its associated timer
-        else if (e.getActionCommand() == "bullet")
+        else if (e.getActionCommand().equals("bullet"))
         {
             bulletTimers.removeFirst().stop();
             screen.removeParticipant(bullets.removeFirst());
@@ -369,6 +458,18 @@ public class Controller implements CollisionListener, ActionListener,
         if (lives == 0)
         {
             finalScreen();
+        }
+
+        // If all the asteroids have been destroyed, advance to the next level
+        else if (asteroidsHit == 28)
+        {
+            // Show a message on the screen
+            screen.setLegend("Level " + level);
+
+            // Go to the next level
+            nextLevelTimer.start();
+            nextLevelTimer.setActionCommand("level");
+
         }
 
         // The ship must have been destroyed. Place a new one and
@@ -452,4 +553,5 @@ public class Controller implements CollisionListener, ActionListener,
     {
         screen.setLegend("");
     }
+
 }
