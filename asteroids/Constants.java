@@ -22,7 +22,12 @@ public class Constants
      * Label on start game button
      */
     public final static String START_LABEL = "Start Game";
-
+    
+    /**
+     * Label on the pause game button
+     */
+    public final static String PAUSE_LABEL = "Pause";
+    
     /**
      * Speed beyond which participants may not accelerate
      */

@@ -23,13 +23,13 @@ public class Game extends JFrame
 
     // Label showing the user's score
     private JLabel scoreLabel;
-   
+
     // Label showing the number of lives remaining
     private JLabel livesLabel;
-    
+
     // Label showing the game level
     private JLabel levelLabel;
-    
+
     /**
      * Lays out the game and creates the controller
      */
@@ -57,18 +57,24 @@ public class Game extends JFrame
         // The button that starts the game
         JButton startGame = new JButton(START_LABEL);
         controls.add(startGame);
-        
+
         // The score label
         scoreLabel = new JLabel("Score: 0");
         controls.add(scoreLabel);
-        
+
         // The lives-count label
         livesLabel = new JLabel("Lives: 3");
         controls.add(livesLabel);
-        
+
         // The game-level label
         levelLabel = new JLabel("Level: 1");
         controls.add(levelLabel);
+
+        // The button that pauses the game
+        JButton pauseGame = new JButton(PAUSE_LABEL);
+        controls.add(pauseGame);
+        pauseGame.addActionListener(controller);
+        pauseGame.setActionCommand("Pause");
 
         // Organize everything
         JPanel mainPanel = new JPanel();
@@ -80,10 +86,9 @@ public class Game extends JFrame
 
         // Connect the controller to the start button
         startGame.addActionListener(controller);
+        startGame.setActionCommand("Start");
     }
-    
-    
-    
+
     /**
      * Setter for updating the score label
      */
@@ -91,7 +96,7 @@ public class Game extends JFrame
     {
         scoreLabel.setText(s);
     }
-    
+
     /**
      * Setter for updating the lives label
      */
@@ -99,7 +104,7 @@ public class Game extends JFrame
     {
         livesLabel.setText(s);
     }
-    
+
     /**
      * Setter for updating the game-level label
      */
@@ -107,7 +112,7 @@ public class Game extends JFrame
     {
         levelLabel.setText(s);
     }
-    
+
     /**
      * Refreshes the window to update the "score" and "lives" labels
      */
@@ -115,8 +120,5 @@ public class Game extends JFrame
     {
         repaint();
     }
-    
-    
-    
-    
+
 }

@@ -1,6 +1,7 @@
 package asteroids;
 
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Random;
@@ -63,6 +64,12 @@ public class Controller implements CollisionListener, ActionListener,
     // The number of asteroids destroyed on a given level
     private int asteroidsHit;
 
+    // Whether or not the game is paused
+    private boolean isPaused;
+
+    // Holds the speeds of the paused participants
+    private ArrayList<Double> pausedSpeeds;
+
     // The Game and Screen objects being controlled
     private Game game;
     private Screen screen;
@@ -104,6 +111,7 @@ public class Controller implements CollisionListener, ActionListener,
         // Bring up the splash screen and start the refresh timer
         splashScreen();
         refreshTimer.start();
+
     }
 
     /**
@@ -191,6 +199,8 @@ public class Controller implements CollisionListener, ActionListener,
         game.setScore("Score: " + score);
         game.setLevel("Level: " + level);
         asteroidsHit = 0;
+        isPaused = false;
+        pausedSpeeds = new ArrayList<Double>();
 
         // Start listening to events. In case we're already listening, take
         // care to avoid listening twice.
@@ -393,10 +403,28 @@ public class Controller implements CollisionListener, ActionListener,
     {
         // The start button has been pressed. Stop whatever we're doing
         // and bring up the initial screen
-        if (e.getSource() instanceof JButton)
+        if (e.getActionCommand() == "Start")
         {
             transitionCount++;
             initialScreen();
+        }
+
+        else if (e.getActionCommand() == "Pause")
+        {
+            // If not already paused, pause the screen
+            if (!isPaused)
+            {
+                pausedSpeeds = screen.pause();
+                isPaused = true;
+            }
+            // If already paused, unpause it
+            else
+            {
+                screen.unpause(pausedSpeeds);
+                isPaused = false;
+                // Return focus to the game screen
+                screen.requestFocusInWindow();
+            }
         }
 
         // Time to refresh the screen

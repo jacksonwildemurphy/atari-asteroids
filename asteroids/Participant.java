@@ -48,7 +48,39 @@ abstract public class Participant
         speedX = Math.cos(direction) * speed;
         speedY = Math.sin(direction) * speed;
     }
-
+    
+    /**
+     * Sets the x component of the participant's speed. 
+     */
+    public void setSpeedX (double s)
+    {
+        speedX = s;
+    }
+    
+    /**
+     * Sets the y component of the participant's speed.
+     */
+    public void setSpeedY (double s)
+    {
+        speedY = s;
+    }
+    
+    /**
+     * Gets the x component of the participant's speed
+     */
+    public double getSpeedX ()
+    {
+        return speedX;
+    }
+    
+    /**
+     * Gets the y component of the participant's speed
+     */
+    public double getSpeedY ()
+    {
+        return speedY;
+    }
+    
     /**
      * Sets the rotation (in radians) of the participant
      */

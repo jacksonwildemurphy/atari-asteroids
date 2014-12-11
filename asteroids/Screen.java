@@ -166,6 +166,52 @@ public class Screen extends JPanel
     }
 
     /**
+     * Pauses the participants on the screen. Returns an ArrayList of all the
+     * participant's speeds for use in the unpause() function. For example, if
+     * there are two participants, with the first having speedX = 5, speedY =
+     * 10, and the second participant having speedX = 7, speedY = 1, then the
+     * returned ArrayList would be [5,10,7,1].
+     */
+    public ArrayList<Double> pause ()
+    {
+        ArrayList<Double> speedsArray = new ArrayList<Double>();
+        for (Participant p : participants)
+        {
+            // Save speeds
+            speedsArray.add(p.getSpeedX());
+            speedsArray.add(p.getSpeedY());
+
+            // Set speeds to zero
+            p.setSpeedX(0);
+            p.setSpeedY(0);
+        }
+        return speedsArray;
+
+    }
+
+    /**
+     * Unpauses the participants by giving them back their x and y speeds, which
+     * are contained in the parameter ArrayList<Double>.
+     */
+    public void unpause (ArrayList<Double> speedsArray)
+    {
+        int speedIndex = 0;
+        for (Participant p : participants)
+        {
+            try
+            {
+                p.setSpeedX(speedsArray.get(speedIndex));
+                p.setSpeedY(speedsArray.get(speedIndex + 1));
+                speedIndex += 2;
+            }
+            catch (IndexOutOfBoundsException e)
+            {
+            }
+        }
+
+    }
+
+    /**
      * Called when it is time to update the screen display. This is what drives
      * the animation.
      */
