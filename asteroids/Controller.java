@@ -13,7 +13,7 @@ import static asteroids.Constants.*;
 /**
  * Controls a game of asteroids
  * 
- * @author Joe Zachary
+ * @author Jackson Murphy and Joe Zachary
  */
 public class Controller implements CollisionListener, ActionListener,
         KeyListener, CountdownTimerListener
@@ -24,11 +24,14 @@ public class Controller implements CollisionListener, ActionListener,
     // The ship (if one is active) or null (otherwise)
     private Ship ship;
 
-    // The bullets
-    private Bullet bullet; // TODO
-
-    // The active bullets
+    // All the bullets on the screen
     private LinkedList<Bullet> bullets;
+
+    // All the dust particles on the screen
+    private LinkedList<Dust> dust;
+
+    // All the debris particles on the screen
+    private LinkedList<Debris> debris;
 
     // When this timer goes off, it is time to refresh the animation
     private Timer refreshTimer;
@@ -45,8 +48,14 @@ public class Controller implements CollisionListener, ActionListener,
     // When this timer goes off, it is time to left-rotate the ship
     private Timer shipRotateLTimer;
 
-    // List of timers for removing bullets from play
+    // List of timers for removing bullets from the screen
     private LinkedList<Timer> bulletTimers;
+
+    // List of timers for removing dust from the screen
+    private LinkedList<Timer> dustTimers;
+
+    // List of timers for removing debris from the screen
+    private LinkedList<Timer> debrisTimers;
 
     // Count of how many transitions have been made. This is used to keep two
     // conflicting transitions from being made at almost the same time.
@@ -67,7 +76,7 @@ public class Controller implements CollisionListener, ActionListener,
     // Whether or not the game is paused
     private boolean isPaused;
 
-    // Holds the speeds of the paused participants
+    // Holds the speeds of the paused ship and asteroids
     private ArrayList<Double> pausedSpeeds;
 
     // The Game and Screen objects being controlled
@@ -93,25 +102,26 @@ public class Controller implements CollisionListener, ActionListener,
         // Set up the next-level timer
         nextLevelTimer = new Timer(END_DELAY, this);
 
-        // Set up the ship's acceleration timer
+        // Set up the ship's acceleration, right-, and left-rotation timers
         shipAccelTimer = new Timer(SHIP_ACCEL_INTERVAL, this);
-
-        // Set up the ship's right-rotation timer
         shipRotateRTimer = new Timer(SHIP_ROTATION_INTERVAL, this);
-
-        // Set up the ship's left-rotation timer
         shipRotateLTimer = new Timer(SHIP_ROTATION_INTERVAL, this);
 
-        // Initialize the bullet list
+        // Initialize the bullet list and associated timers
         bullets = new LinkedList<Bullet>();
-
-        // Set up the bullet timer list
         bulletTimers = new LinkedList<Timer>();
+
+        // Initialize the dust list and associated timers
+        dust = new LinkedList<Dust>();
+        dustTimers = new LinkedList<Timer>();
+
+        // Initialize the debris list and associated timers
+        debris = new LinkedList<Debris>();
+        debrisTimers = new LinkedList<Timer>();
 
         // Bring up the splash screen and start the refresh timer
         splashScreen();
         refreshTimer.start();
-
     }
 
     /**
@@ -128,7 +138,6 @@ public class Controller implements CollisionListener, ActionListener,
 
         // Make sure there's no ship
         ship = null;
-
     }
 
     /**
@@ -151,7 +160,7 @@ public class Controller implements CollisionListener, ActionListener,
     }
 
     /**
-     * Places four large asteroids near the corners of the screen. Give them
+     * Places four large asteroids near the corners of the screen. Gives them
      * random directions and rotations, and a level-dependent speed.
      */
     private void placeAsteroids ()
@@ -185,22 +194,28 @@ public class Controller implements CollisionListener, ActionListener,
         // Clear the screen
         screen.clear();
 
+        // Reset the statistics
+        lives = 3;
+        score = 0;
+        level = 1;
+        asteroidsHit = 0;
+        isPaused = false;
+        pausedSpeeds = new ArrayList<Double>();
+
+        // Reset the GUI labels
+        game.setLives("Lives: " + lives);
+        game.setScore("Score: " + score);
+        game.setLevel("Level: " + level);
+
         // Place four asteroids
         placeAsteroids();
 
         // Place the ship
         placeShip();
 
-        // Reset statistics
-        lives = 3;
-        score = 0;
-        level = 1;
-        game.setLives("Lives: " + lives);
-        game.setScore("Score: " + score);
-        game.setLevel("Level: " + level);
-        asteroidsHit = 0;
-        isPaused = false;
-        pausedSpeeds = new ArrayList<Double>();
+        // In case a new game was started while the game was paused, correct the
+        // label on the pause button
+        game.setPauseLabel("Pause");
 
         // Start listening to events. In case we're already listening, take
         // care to avoid listening twice.
@@ -218,8 +233,11 @@ public class Controller implements CollisionListener, ActionListener,
      */
     private void nextLevelScreen ()
     {
-        asteroidsHit = 0;
+        // Restart ship
         ship = null;
+
+        // Reset asteroid counter
+        asteroidsHit = 0;
 
         // Clear the screen
         screen.clear();
@@ -240,6 +258,13 @@ public class Controller implements CollisionListener, ActionListener,
         screen.removeKeyListener(this);
         screen.addCollisionListener(this);
         screen.addKeyListener(this);
+
+        // Give the user an extra life if they've reached level 5 or 7
+        if (level == 5 || level == 7)
+        {
+            lives++;
+            game.setLives("Lives: " + lives);
+        }
 
         // Give focus to the game screen
         screen.requestFocusInWindow();
@@ -270,12 +295,57 @@ public class Controller implements CollisionListener, ActionListener,
         bullet.setVelocity(BULLET_SPEED, ship.getRotation());
         screen.addParticipant(bullet);
         bullets.add(bullet);
+
         // An associated timer removes the bullet from play after a period of
         // time
-        Timer bulletTimer = new Timer(BULLET_DURATION, this);
-        bulletTimer.setActionCommand("bullet");
-        bulletTimer.start();
-        bulletTimers.add(bulletTimer);
+        Timer t = new Timer(BULLET_DURATION, this);
+        t.setActionCommand("bullet");
+        t.start();
+        bulletTimers.add(t);
+    }
+
+    /**
+     * Create dust at the spot where an asteroid is hit
+     */
+    private void createDust (Asteroid a)
+    {
+        // Create six dust particles and give them random directions
+        for (int i = 0; i < 6; i++)
+        {
+            Dust d = new Dust();
+            d.setPosition(a.getX(), a.getY());
+            d.setVelocity(DUST_SPEED, random.nextDouble() * 2 * Math.PI);
+            dust.add(d); // add the dust particle to the list of active dust
+            screen.addParticipant(d);
+        }
+        // Add a timer for later removing the six dust particles
+        Timer t = new Timer(DUST_DURATION, this);
+        t.setActionCommand("dust");
+        t.start();
+        dustTimers.add(t);
+    }
+
+    /**
+     * Create debris at the spot where the ship is hit
+     */
+    public void createDebris (Ship s)
+    {
+        // Create three debris particles, give them random directions, and add
+        // them to the list of active debris
+        for (int i = 0; i < 3; i++)
+        {
+            Debris d = new Debris();
+            d.setPosition(s.getX(), s.getY());
+            d.setVelocity(DEBRIS_SPEED, random.nextDouble() * 2 * Math.PI);
+            d.setRotation(2 * Math.PI * random.nextDouble());
+            debris.add(d);
+            screen.addParticipant(d);
+        }
+        // Add a timer for later removing the three debris particles
+        Timer t = new Timer(DEBRIS_DURATION, this);
+        t.setActionCommand("debris");
+        t.start();
+        debrisTimers.add(t);
     }
 
     /**
@@ -286,22 +356,28 @@ public class Controller implements CollisionListener, ActionListener,
     {
         if (p1 instanceof Asteroid && p2 instanceof Ship)
         {
+            createDust((Asteroid) p1);
+            createDebris((Ship) p2);
             shipCollision((Ship) p2);
             asteroidCollision((Asteroid) p1);
         }
         else if (p1 instanceof Ship && p2 instanceof Asteroid)
         {
+            createDust((Asteroid) p2);
+            createDebris((Ship) p1);
             shipCollision((Ship) p1);
             asteroidCollision((Asteroid) p2);
 
         }
         else if (p1 instanceof Asteroid && p2 instanceof Bullet)
         {
+            createDust((Asteroid) p1);
             bulletCollision((Bullet) p2);
             asteroidCollision((Asteroid) p1);
         }
         else if (p1 instanceof Bullet && p2 instanceof Asteroid)
         {
+            createDust((Asteroid) p2);
             bulletCollision((Bullet) p1);
             asteroidCollision((Asteroid) p2);
         }
@@ -367,9 +443,11 @@ public class Controller implements CollisionListener, ActionListener,
 
         }
 
-        // Two smaller asteroids are created if the destroyed asteroid wasn't
-        // the smallest. Put them at the same position as the one that was just
-        // destroyed, increase their speed, and give them a random direction.
+        // If there are still asteroids remaining:
+        // Two smaller asteroids replace the one just destroyed (unless the
+        // destroyed asteroid was of size small. Puts them at the same position
+        // as the one that was just destroyed, increases their speed, and gives
+        // them a random direction.
         size--;
         if (size >= 0)
         {
@@ -406,22 +484,43 @@ public class Controller implements CollisionListener, ActionListener,
         if (e.getActionCommand() == "Start")
         {
             transitionCount++;
+            game.setStartButtonLabel("New Game");
             initialScreen();
         }
 
+        // The pause button has been pressed. Pause or resume the game depending
+        // on the game's current state.
         else if (e.getActionCommand() == "Pause")
         {
-            // If not already paused, pause the screen
+            // Pause the game
             if (!isPaused)
             {
-                pausedSpeeds = screen.pause();
                 isPaused = true;
+
+                // // Remove all dust and debris from the screen because
+                // // their timers interfere with the pause/resume cycle.
+                // for (Dust d : dust)
+                // {
+                // screen.removeParticipant(d);
+                // }
+                // for (Debris b : debris)
+                // {
+                // screen.removeParticipant(b);
+                // }
+
+                // Store the speed of each participant so that we can restore
+                // their speeds upon resuming the game
+                pausedSpeeds = screen.pause();
+
+                // Update the button label
+                game.setPauseLabel("Resume");
             }
-            // If already paused, unpause it
+            // If already paused, resume the game
             else
             {
                 screen.unpause(pausedSpeeds);
                 isPaused = false;
+                game.setPauseLabel("Pause");
                 // Return focus to the game screen
                 screen.requestFocusInWindow();
             }
@@ -470,6 +569,27 @@ public class Controller implements CollisionListener, ActionListener,
             bulletTimers.removeFirst().stop();
             screen.removeParticipant(bullets.removeFirst());
         }
+
+        // Time to remove a dust group from the screen and delete its timer
+        else if (e.getActionCommand().equals("dust"))
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                screen.removeParticipant(dust.removeFirst());
+            }
+            dustTimers.removeFirst().stop();
+        }
+
+        // Time to remove a debris group from the screen and delete its timer
+        else if (e.getActionCommand().equals("debris"))
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                screen.removeParticipant(debris.removeFirst());
+            }
+            debrisTimers.removeFirst().stop();
+        }
+
     }
 
     /**

@@ -14,7 +14,7 @@ import static asteroids.Constants.*;
 public class Bullet extends Participant
 {
     // The outline shape of a Bullet
-    Shape outline;
+    private Shape outline;
 
     /**
      * Creates a bullet.
@@ -34,7 +34,7 @@ public class Bullet extends Participant
         // This will contain the outline
         Path2D.Double poly = new Path2D.Double();
 
-        // Create a square whose center coords. are (x,y)
+        // Create a square whose center coords. are (0,0)
         poly.moveTo(1, -1);
         poly.lineTo(1, -1);
         poly.lineTo(1, 1);

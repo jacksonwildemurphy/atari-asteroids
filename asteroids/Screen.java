@@ -166,22 +166,23 @@ public class Screen extends JPanel
     }
 
     /**
-     * Pauses the participants on the screen. Returns an ArrayList of all the
-     * participant's speeds for use in the unpause() function. For example, if
-     * there are two participants, with the first having speedX = 5, speedY =
-     * 10, and the second participant having speedX = 7, speedY = 1, then the
-     * returned ArrayList would be [5,10,7,1].
+     * Pauses all participants on the screen. Returns an ArrayList of the ship's
+     * and asteroids' x and y speeds. For example,
+     * [shipX,shipY,ast1X,ast1Y,ast2X,ast2Y,...]. The order of the array depends
+     * on the order of "participants".
      */
     public ArrayList<Double> pause ()
     {
         ArrayList<Double> speedsArray = new ArrayList<Double>();
         for (Participant p : participants)
         {
-            // Save speeds
-            speedsArray.add(p.getSpeedX());
-            speedsArray.add(p.getSpeedY());
-
-            // Set speeds to zero
+            // Save the speeds of the ship and asteroids
+            if (p instanceof Ship || p instanceof Asteroid)
+            {
+                speedsArray.add(p.getSpeedX());
+                speedsArray.add(p.getSpeedY());
+            }
+            // Set speeds of all participants to zero
             p.setSpeedX(0);
             p.setSpeedY(0);
         }
@@ -190,22 +191,25 @@ public class Screen extends JPanel
     }
 
     /**
-     * Unpauses the participants by giving them back their x and y speeds, which
-     * are contained in the parameter ArrayList<Double>.
+     * Unpauses the ship and asteroids by giving them back their x and y speeds,
+     * which are contained in the parameter ArrayList<Double>.
      */
     public void unpause (ArrayList<Double> speedsArray)
     {
         int speedIndex = 0;
         for (Participant p : participants)
         {
-            try
+            if (p instanceof Ship || p instanceof Asteroid)
             {
-                p.setSpeedX(speedsArray.get(speedIndex));
-                p.setSpeedY(speedsArray.get(speedIndex + 1));
-                speedIndex += 2;
-            }
-            catch (IndexOutOfBoundsException e)
-            {
+                try
+                {
+                    p.setSpeedX(speedsArray.get(speedIndex));
+                    p.setSpeedY(speedsArray.get(speedIndex + 1));
+                    speedIndex += 2;
+                }
+                catch (IndexOutOfBoundsException e)
+                {
+                }
             }
         }
 

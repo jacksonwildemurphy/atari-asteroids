@@ -75,7 +75,27 @@ public class Constants
      * Speed, in pixels per frame, of a bullet.
      */
     public final static double BULLET_SPEED = 15;
-
+    
+    /**
+     * Duration in milliseconds of dust before it disappears.
+     */
+    public final static int DUST_DURATION = 1500;
+    
+    /**
+     * Speed, in pixels per frame, of a dust particle
+     */
+    public final static double DUST_SPEED = 1;
+    
+    /**
+     * Duration in milliseconds of debris before it disappears.
+     */
+    public final static int DEBRIS_DURATION = 2000;
+    
+    /**
+     * Speed, in pixels per frame, of a debris particle
+     */
+    public final static double DEBRIS_SPEED = 1;
+    
     /**
      * Scaling factors used for asteroids of size 0, 1, and 2.
      */
@@ -96,5 +116,5 @@ public class Constants
      * The number of milliseconds between firings of the ship's left- and
      * right-rotation timers.
      */
-    public final static int SHIP_ROTATION_INTERVAL = 50;
+    public final static int SHIP_ROTATION_INTERVAL = 40;
 }

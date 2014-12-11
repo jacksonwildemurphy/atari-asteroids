@@ -29,6 +29,12 @@ public class Game extends JFrame
 
     // Label showing the game level
     private JLabel levelLabel;
+    
+    // Button for pausing/resuming the game
+    private JButton pauseButton;
+
+    // Button for starting a new game
+    private JButton newGameButton;
 
     /**
      * Lays out the game and creates the controller
@@ -54,9 +60,8 @@ public class Game extends JFrame
         // This panel contains buttons and labels
         JPanel controls = new JPanel();
 
-        // The button that starts the game
-        JButton startGame = new JButton(START_LABEL);
-        controls.add(startGame);
+        newGameButton = new JButton(START_LABEL);
+        controls.add(newGameButton);
 
         // The score label
         scoreLabel = new JLabel("Score: 0");
@@ -71,10 +76,10 @@ public class Game extends JFrame
         controls.add(levelLabel);
 
         // The button that pauses the game
-        JButton pauseGame = new JButton(PAUSE_LABEL);
-        controls.add(pauseGame);
-        pauseGame.addActionListener(controller);
-        pauseGame.setActionCommand("Pause");
+        pauseButton = new JButton(PAUSE_LABEL);
+        controls.add(pauseButton);
+        pauseButton.addActionListener(controller);
+        pauseButton.setActionCommand("Pause");
 
         // Organize everything
         JPanel mainPanel = new JPanel();
@@ -85,8 +90,8 @@ public class Game extends JFrame
         pack();
 
         // Connect the controller to the start button
-        startGame.addActionListener(controller);
-        startGame.setActionCommand("Start");
+        newGameButton.addActionListener(controller);
+        newGameButton.setActionCommand("Start");
     }
 
     /**
@@ -112,7 +117,23 @@ public class Game extends JFrame
     {
         levelLabel.setText(s);
     }
-
+    
+    /**
+     * Setter for changing the pause button label
+     */
+    public void setPauseLabel (String s)
+    {
+        pauseButton.setText(s);
+    }
+    
+    /**
+     * Setter for changing the label of the new game button
+     */
+    public void setStartButtonLabel (String s)
+    {
+        newGameButton.setText(s);
+    }
+    
     /**
      * Refreshes the window to update the "score" and "lives" labels
      */
