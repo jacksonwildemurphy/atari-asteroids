@@ -8,7 +8,7 @@ import static asteroids.Constants.*;
 /**
  * The area in which the game takes place.
  * 
- * @author Joe Zachary
+ * @author Joe Zachary, Jackson Murphy
  */
 public class Screen extends JPanel
 {
@@ -167,9 +167,9 @@ public class Screen extends JPanel
 
     /**
      * Pauses all participants on the screen. Returns an ArrayList of the ship's
-     * and asteroids' x and y speeds. For example,
-     * [shipX,shipY,ast1X,ast1Y,ast2X,ast2Y,...]. The order of the array depends
-     * on the order of "participants".
+     * and asteroids' x- and y-speeds. For example,
+     * [shipX,shipY,ast1X,ast1Y,ast2X,ast2Y,...]. Note: The order of the return
+     * array depends on the order of the "participants" array.
      */
     public ArrayList<Double> pause ()
     {
@@ -191,8 +191,9 @@ public class Screen extends JPanel
     }
 
     /**
-     * Unpauses the ship and asteroids by giving them back their x and y speeds,
-     * which are contained in the parameter ArrayList<Double>.
+     * Unpauses the ship and asteroids by assigning each of them x- and y-speeds
+     * that are contained in an ArrayList<Double> that is passed as the
+     * parameter.
      */
     public void unpause (ArrayList<Double> speedsArray)
     {
@@ -212,7 +213,6 @@ public class Screen extends JPanel
                 }
             }
         }
-
     }
 
     /**

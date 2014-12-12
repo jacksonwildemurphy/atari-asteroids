@@ -77,7 +77,7 @@ public class Controller implements CollisionListener, ActionListener,
     private boolean isPaused;
 
     // Holds the speeds of the paused ship and asteroids
-    private ArrayList<Double> pausedSpeeds;
+    private ArrayList<Double> savedSpeeds;
 
     // The Game and Screen objects being controlled
     private Game game;
@@ -200,7 +200,7 @@ public class Controller implements CollisionListener, ActionListener,
         level = 1;
         asteroidsHit = 0;
         isPaused = false;
-        pausedSpeeds = new ArrayList<Double>();
+        savedSpeeds = new ArrayList<Double>();
 
         // Reset the GUI labels
         game.setLives("Lives: " + lives);
@@ -495,32 +495,28 @@ public class Controller implements CollisionListener, ActionListener,
             // Pause the game
             if (!isPaused)
             {
+                // Toggle the state of the game
                 isPaused = true;
-
-                // // Remove all dust and debris from the screen because
-                // // their timers interfere with the pause/resume cycle.
-                // for (Dust d : dust)
-                // {
-                // screen.removeParticipant(d);
-                // }
-                // for (Debris b : debris)
-                // {
-                // screen.removeParticipant(b);
-                // }
 
                 // Store the speed of each participant so that we can restore
                 // their speeds upon resuming the game
-                pausedSpeeds = screen.pause();
+                savedSpeeds = screen.pause();
 
-                // Update the button label
+                // Update the pause button's label
                 game.setPauseLabel("Resume");
             }
+
             // If already paused, resume the game
             else
             {
-                screen.unpause(pausedSpeeds);
+                screen.unpause(savedSpeeds);
+
+                // Toggle the state of the game
                 isPaused = false;
+
+                // Update the pause button's label
                 game.setPauseLabel("Pause");
+
                 // Return focus to the game screen
                 screen.requestFocusInWindow();
             }
@@ -529,13 +525,12 @@ public class Controller implements CollisionListener, ActionListener,
         // Time to refresh the screen
         else if (e.getSource() == refreshTimer)
         {
-
             // Refresh screen
             screen.refresh();
         }
 
         // Time to go to the next level
-        // Note: Why doesn't Command().equals() work here?
+        // (Note: Why doesn't "...Command().equals()" work here?)
         else if (e.getActionCommand() == "level")
         {
             nextLevelTimer.stop();
@@ -566,11 +561,15 @@ public class Controller implements CollisionListener, ActionListener,
         // Time to remove a bullet and delete its associated timer
         else if (e.getActionCommand().equals("bullet"))
         {
+            // Remove timer from the array of bullet timers, and stop it
             bulletTimers.removeFirst().stop();
+            // Remove the bullet from the screen, and from the list of active
+            // bullets
             screen.removeParticipant(bullets.removeFirst());
         }
 
-        // Time to remove a dust group from the screen and delete its timer
+        // Time to remove a group of six dust objects from the screen and delete
+        // its timer
         else if (e.getActionCommand().equals("dust"))
         {
             for (int i = 0; i < 6; i++)
@@ -580,7 +579,8 @@ public class Controller implements CollisionListener, ActionListener,
             dustTimers.removeFirst().stop();
         }
 
-        // Time to remove a debris group from the screen and delete its timer
+        // Time to remove a group of three debris objects from the screen and
+        // delete its timer
         else if (e.getActionCommand().equals("debris"))
         {
             for (int i = 0; i < 3; i++)
@@ -589,8 +589,7 @@ public class Controller implements CollisionListener, ActionListener,
             }
             debrisTimers.removeFirst().stop();
         }
-
-    }
+    } // end of actionPerformed()
 
     /**
      * Based on the state of the controller, transition to the next state.
@@ -608,7 +607,7 @@ public class Controller implements CollisionListener, ActionListener,
             finalScreen();
         }
 
-        // If all the asteroids have been destroyed, advance to the next level
+        // If all the asteroids have been destroyed, advance to the next level.
         else if (asteroidsHit == 28)
         {
             // Show a message on the screen
@@ -634,35 +633,36 @@ public class Controller implements CollisionListener, ActionListener,
     @Override
     public void keyPressed (KeyEvent e)
     {
-        // Left arrow key rotates ship to the left
+        // The left arrow key starts a timer that smoothly rotates the ship to
+        // the left until the key is released.
         if (e.getKeyCode() == KeyEvent.VK_LEFT)
         {
             if (ship != null && !shipRotateLTimer.isRunning())
                 shipRotateLTimer.start();
-
         }
 
-        // Right arrow key starts a timer that smoothly rotates the ship
+        // The right arrow key starts a timer that smoothly rotates the ship to
+        // the right until the key is released.
         else if (e.getKeyCode() == KeyEvent.VK_RIGHT)
         {
             if (ship != null && !shipRotateRTimer.isRunning())
                 shipRotateRTimer.start();
         }
 
-        // Up arrow key starts a timer that smoothly accelerates the ship
+        // The up arrow key starts a timer that smoothly accelerates the ship
+        // until the key is released
         else if (e.getKeyCode() == KeyEvent.VK_UP)
         {
             if (ship != null && !shipAccelTimer.isRunning())
                 shipAccelTimer.start();
         }
 
-        // Space bar shoots a bullet if there are fewer than 8 bullets already
-        // on the screen.
+        // The space bar shoots a bullet if there are fewer than 8 bullets
+        // already on the screen.
         else if (e.getKeyCode() == KeyEvent.VK_SPACE)
         {
             if (ship != null && bullets.size() < 8)
                 shootBullet();
-
         }
     }
 

@@ -1,13 +1,15 @@
 package asteroids;
 
 import javax.swing.*;
+
 import java.awt.*;
+
 import static asteroids.Constants.*;
 
 /**
  * Implements an asteroid game.
  * 
- * @author Joe Zachary
+ * @author Jackson Murphy, Joe Zachary
  *
  */
 public class Game extends JFrame
@@ -29,7 +31,7 @@ public class Game extends JFrame
 
     // Label showing the game level
     private JLabel levelLabel;
-    
+
     // Button for pausing/resuming the game
     private JButton pauseButton;
 
@@ -59,25 +61,28 @@ public class Game extends JFrame
 
         // This panel contains buttons and labels
         JPanel controls = new JPanel();
+        controls.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 1));
 
         newGameButton = new JButton(START_LABEL);
         controls.add(newGameButton);
 
-        // The score label
+        // The score label. The initial score is 0
         scoreLabel = new JLabel("Score: 0");
         controls.add(scoreLabel);
 
-        // The lives-count label
+        // The lives-count label. Initially there are three lives
         livesLabel = new JLabel("Lives: 3");
         controls.add(livesLabel);
 
-        // The game-level label
+        // The game-level label. The game beings on level 1
         levelLabel = new JLabel("Level: 1");
         controls.add(levelLabel);
 
         // The button that pauses the game
         pauseButton = new JButton(PAUSE_LABEL);
         controls.add(pauseButton);
+
+        // Connect the controller to the pause button
         pauseButton.addActionListener(controller);
         pauseButton.setActionCommand("Pause");
 
@@ -117,7 +122,7 @@ public class Game extends JFrame
     {
         levelLabel.setText(s);
     }
-    
+
     /**
      * Setter for changing the pause button label
      */
@@ -125,7 +130,7 @@ public class Game extends JFrame
     {
         pauseButton.setText(s);
     }
-    
+
     /**
      * Setter for changing the label of the new game button
      */
@@ -133,13 +138,4 @@ public class Game extends JFrame
     {
         newGameButton.setText(s);
     }
-    
-    /**
-     * Refreshes the window to update the "score" and "lives" labels
-     */
-    public void refresh ()
-    {
-        repaint();
-    }
-
 }

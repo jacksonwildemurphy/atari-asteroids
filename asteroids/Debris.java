@@ -4,9 +4,9 @@ import java.awt.Shape;
 import java.awt.geom.Path2D;
 
 /**
- * Represents Debris objects. This is a subclass of asteroids.Participants
+ * Represents Debris objects.
  * 
- * @author Jackson Murphy. 12/11/14
+ * @author Jackson Murphy
  */
 public class Debris extends Participant
 {
@@ -23,7 +23,7 @@ public class Debris extends Participant
     }
 
     /**
-     * Creates the shape of a debris object, which is represented by a rectangle
+     * Creates the shape of a debris object, which is represented by a triangle
      * centered at (0,0) with a height of 14 and a width of 2 pixels.
      */
     private Shape createDebris ()
@@ -32,7 +32,7 @@ public class Debris extends Participant
         // This will contain the outline
         Path2D.Double poly = new Path2D.Double();
 
-        // Create a rectangle centered at (0,0)
+        // Create a triangle centered at (0,0)
         poly.moveTo(-7, 0);
         poly.lineTo(7, -1);
         poly.lineTo(7, 1);
@@ -43,7 +43,6 @@ public class Debris extends Participant
 
     public Shape getOutline ()
     {
-
         return outline;
     }
 

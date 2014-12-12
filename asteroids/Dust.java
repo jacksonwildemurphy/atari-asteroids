@@ -4,9 +4,9 @@ import java.awt.Shape;
 import java.awt.geom.Path2D;
 
 /**
- * Represents Dust objects. This is a subclass of asteroids.Participants
+ * Represents Dust objects.
  * 
- * @author Jackson Murphy. 12/11/14
+ * @author Jackson Murphy
  */
 public class Dust extends Participant
 {
@@ -22,7 +22,7 @@ public class Dust extends Participant
     }
   
     /**
-     * Creates the shape of a dust object, which is represented by a 2x2 px
+     * Creates the shape of a dust object, which is represented by a 2x2 pixel
      * square centered at (0,0).
      */
     private Shape createDust () {

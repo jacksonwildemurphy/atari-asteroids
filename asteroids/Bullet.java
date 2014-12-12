@@ -8,7 +8,7 @@ import static asteroids.Constants.*;
 /**
  * Represents bullet objects.
  * 
- * @author Jackson Murphy. Created 12/2/14.
+ * @author Jackson Murphy
  *
  */
 public class Bullet extends Participant
@@ -26,7 +26,7 @@ public class Bullet extends Participant
     }
 
     /**
-     * Creates the shape of a Bullet object, which is represented by a 2x2 px
+     * Creates the shape of a Bullet object, which is represented by a 2x2 pixel
      * square centered at (0,0).
      */
     private Shape createBullet ()
@@ -34,7 +34,7 @@ public class Bullet extends Participant
         // This will contain the outline
         Path2D.Double poly = new Path2D.Double();
 
-        // Create a square whose center coords. are (0,0)
+        // Create a square centered at (0,0)
         poly.moveTo(1, -1);
         poly.lineTo(1, -1);
         poly.lineTo(1, 1);

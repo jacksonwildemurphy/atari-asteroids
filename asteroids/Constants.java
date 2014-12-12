@@ -3,7 +3,7 @@ package asteroids;
 /**
  * Provides constants governing the game
  * 
- * @author Joe Zachary
+ * @author Jackson Murphy, Joe Zachary
  */
 
 public class Constants
